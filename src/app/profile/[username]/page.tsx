@@ -1,7 +1,9 @@
 import {
   getProfileByUsername,
   getUserLikedPosts,
+  getUserLikedReels,
   getUserPosts,
+  getUserReels,
   isFollowing,
 } from "@/actions/profile.action";
 import { notFound } from "next/navigation";
@@ -28,9 +30,11 @@ async function ProfilePageServer({ params }: Props) {
 
   if (!user) notFound();
 
-  const [posts, likedPosts, isCurrentUserFollowing] = await Promise.all([
+  const [posts, likedPosts, reels, likedReels, isCurrentUserFollowing] = await Promise.all([
     getUserPosts(user.id),
     getUserLikedPosts(user.id),
+    getUserReels(user.id),
+    getUserLikedReels(user.id),
     isFollowing(user.id),
   ]);
 
@@ -39,6 +43,8 @@ async function ProfilePageServer({ params }: Props) {
       user={user}
       posts={posts}
       likedPosts={likedPosts}
+      reels={reels}
+      likedReels={likedReels}
       isFollowing={isCurrentUserFollowing}
     />
   );

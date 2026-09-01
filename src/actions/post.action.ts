@@ -4,29 +4,50 @@ import { prisma } from "@/lib/prisma";
 import { getDbUserId } from "./user.action"
 import { revalidatePath } from "next/cache";
 
-export async function createPost(content:string,image:string){
-    try {
-        const userId = await getDbUserId();
-        if(!userId) return;
-        const post = await prisma.post.create({
-            data : {
-                content,
-                image,
-                authorId: userId
-            }
-        })
+export async function createPost(
+  content: string,
+  mediaUrl?: string,
+  mediaType?: "image" | "video"
+) {
+  try {
+    const userId = await getDbUserId();
 
-        revalidatePath("/");
-        return {success:true,post}
-    } catch (error) {
-        console.error("Failed to create post",error);
-        return {success: false, error: "Failed to create post"};
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
     }
+
+    if (!content.trim() && !mediaUrl) {
+      return { success: false, error: "Content or media is required" };
+    }
+
+    const post = await prisma.post.create({
+      data: {
+        content: content.trim() || null,
+        image: mediaType === "image" ? mediaUrl : null,
+        video: mediaType === "video" ? mediaUrl : null,
+        authorId: userId,
+      },
+    });
+
+    revalidatePath("/");
+
+    return {
+      success: true,
+      post,
+    };
+  } catch (error) {
+    console.error("Failed to create post:", error);
+
+    return {
+      success: false,
+      error: "Failed to create post",
+    };
+  }
 }
 
 export async function getPosts(){
     try {
-        const post = prisma.post.findMany({
+        const post = await prisma.post.findMany({
             orderBy: {
                 createdAt:"desc"
             },

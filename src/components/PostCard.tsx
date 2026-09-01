@@ -10,7 +10,7 @@ import { Avatar, AvatarImage } from "./ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { DeleteAlertDialog } from "./DeleteAlertDialog";
 import { Button } from "./ui/button";
-import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon } from "lucide-react";
+import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon, PlayIcon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 
 type Posts = Awaited<ReturnType<typeof getPosts>>;
@@ -114,6 +114,29 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
             </div>
           )}
 
+          {/* POST VIDEO - Instagram Style */}
+          {post.video && (
+            <div className="relative w-full bg-black rounded-lg overflow-hidden">
+              <div className="relative aspect-[4/5] sm:aspect-square">
+                <video
+                  src={post.video}
+                  className="w-full h-full object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+
+              {/* Video indicator badge */}
+              <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                <PlayIcon className="size-3" />
+                Video
+              </div>
+            </div>
+          )}
+
           {/* LIKE & COMMENT BUTTONS */}
           <div className="flex items-center pt-2 space-x-4">
             {user ? (
@@ -158,7 +181,6 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
           {showComments && (
             <div className="space-y-4 pt-4 border-t">
               <div className="space-y-4">
-                {/* DISPLAY COMMENTS */}
                 {post.comments.map((comment) => (
                   <div key={comment.id} className="flex space-x-3">
                     <Avatar className="size-8 flex-shrink-0">
@@ -229,4 +251,5 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     </Card>
   );
 }
+
 export default PostCard;

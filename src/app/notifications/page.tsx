@@ -6,7 +6,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
-import { HeartIcon, MessageCircleIcon, UserPlusIcon } from "lucide-react";
+import { HeartIcon, MessageCircleIcon, UserPlusIcon, VideoIcon } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -17,13 +17,32 @@ type Notification = Notifications[number];
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case "LIKE":
+    case "REEL_LIKE":
       return <HeartIcon className="size-4 text-red-500" />;
     case "COMMENT":
+    case "REEL_COMMENT":
       return <MessageCircleIcon className="size-4 text-blue-500" />;
     case "FOLLOW":
       return <UserPlusIcon className="size-4 text-green-500" />;
     default:
       return null;
+  }
+};
+
+const getNotificationText = (type: string) => {
+  switch (type) {
+    case "FOLLOW":
+      return "started following you";
+    case "LIKE":
+      return "liked your post";
+    case "COMMENT":
+      return "commented on your post";
+    case "REEL_LIKE":
+      return "liked your reel";
+    case "REEL_COMMENT":
+      return "commented on your reel";
+    default:
+      return "";
   }
 };
 
@@ -85,14 +104,11 @@ function NotificationsPage() {
                         <span className="font-medium">
                           {notification.creator.name ?? notification.creator.username}
                         </span>{" "}
-                        {notification.type === "FOLLOW"
-                          ? "started following you"
-                          : notification.type === "LIKE"
-                          ? "liked your post"
-                          : "commented on your post"}
+                        {getNotificationText(notification.type)}
                       </span>
                     </div>
 
+                    {/* Post-related notifications */}
                     {notification.post &&
                       (notification.type === "LIKE" || notification.type === "COMMENT") && (
                         <div className="pl-6 space-y-2">
@@ -110,6 +126,30 @@ function NotificationsPage() {
                           {notification.type === "COMMENT" && notification.comment && (
                             <div className="text-sm p-2 bg-accent/50 rounded-md">
                               {notification.comment.content}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Reel-related notifications */}
+                    {notification.reel &&
+                      (notification.type === "REEL_LIKE" || notification.type === "REEL_COMMENT") && (
+                        <div className="pl-6 space-y-2">
+                          <div className="text-sm text-muted-foreground rounded-md p-2 bg-muted/30 mt-2">
+                            <div className="flex items-center gap-1 mb-1">
+                              <VideoIcon className="size-3" />
+                              <p>{notification.reel.caption}</p>
+                            </div>
+                            <video
+                              src={notification.reel.videoUrl}
+                              className="mt-2 rounded-md w-full max-w-[200px] h-auto object-cover"
+                              muted
+                            />
+                          </div>
+
+                          {notification.type === "REEL_COMMENT" && notification.reelComment && (
+                            <div className="text-sm p-2 bg-accent/50 rounded-md">
+                              {notification.reelComment.content}
                             </div>
                           )}
                         </div>

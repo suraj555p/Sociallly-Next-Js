@@ -28,6 +28,10 @@ model User {
   comments Comment[]
   likes    Like[]
 
+  reels        Reel[]
+  reelComments ReelComment[]
+  reelLikes    ReelLike[]
+
   followers Follows[] @relation("following")
   following Follows[] @relation("follower")
 
@@ -40,6 +44,7 @@ model Post {
   authorId  String
   content   String?
   image     String?
+  video     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -76,6 +81,47 @@ model Like {
   @@index([userId, postId])
 }
 
+model Reel {
+  id        String   @id @default(cuid())
+  authorId  String
+  caption   String?
+  videoUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments      ReelComment[]
+  likes         ReelLike[]
+  notifications Notification[]
+}
+
+model ReelComment {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  reelId    String
+  createdAt DateTime @default(now())
+
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reel          Reel           @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([authorId, reelId])
+}
+
+model ReelLike {
+  id        String   @id @default(cuid())
+  reelId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reel Reel @relation(fields: [reelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reelId])
+  @@index([userId, reelId])
+}
+
 model Follows {
   followerId  String
   followingId String
@@ -96,12 +142,16 @@ model Notification {
   read      Boolean          @default(false)
   postId    String?
   commentId String?
+  reelId       String?
+  reelCommentId String?
   createdAt DateTime         @default(now())
 
-  user    User     @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  creator User     @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user        User         @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  creator     User         @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  post        Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment     Comment?     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reel        Reel?        @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  reelComment ReelComment? @relation(fields: [reelCommentId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
 }
@@ -110,4 +160,6 @@ enum NotificationType {
   LIKE
   COMMENT
   FOLLOW
+  REEL_LIKE
+  REEL_COMMENT
 }

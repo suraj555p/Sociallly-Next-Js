@@ -5,32 +5,37 @@ import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Textarea } from "./ui/textarea";
-import { ImageIcon, Loader2Icon, SendIcon } from "lucide-react";
+import { ImageIcon, Loader2Icon, SendIcon, VideoIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { createPost } from "@/actions/post.action";
 import toast from "react-hot-toast";
 import ImageUpload from "./ImageUpload";
-//import "@uploadthing/react/styles.css";
 
 function CreatePost() {
   const { user } = useUser();
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [showVideoUpload, setShowVideoUpload] = useState(false);
 
   const handleSubmit = async () => {
-    if (!content.trim() && !imageUrl) return;
+    if (!content.trim() && !imageUrl && !videoUrl) return;
 
     setIsPosting(true);
     try {
-      const result = await createPost(content, imageUrl);
+      // Pass either image or video (not both)
+      const mediaUrl = imageUrl || videoUrl;
+      const mediaType = imageUrl ? "image" : videoUrl ? "video" : undefined;
+      
+      const result = await createPost(content, mediaUrl, mediaType);
       if (result?.success) {
-        // reset the form
         setContent("");
         setImageUrl("");
+        setVideoUrl("");
         setShowImageUpload(false);
-
+        setShowVideoUpload(false);
         toast.success("Post created successfully");
       }
     } catch (error) {
@@ -58,6 +63,7 @@ function CreatePost() {
             />
           </div>
 
+          {/* Image Upload */}
           {(showImageUpload || imageUrl) && (
             <div className="border rounded-lg p-4">
               <ImageUpload
@@ -71,6 +77,20 @@ function CreatePost() {
             </div>
           )}
 
+          {/* Video Upload */}
+          {(showVideoUpload || videoUrl) && (
+            <div className="border rounded-lg p-4">
+              <ImageUpload
+                endpoint="postVideo"
+                value={videoUrl}
+                onChange={(url) => {
+                  setVideoUrl(url);
+                  if (!url) setShowVideoUpload(false);
+                }}
+              />
+            </div>
+          )}
+
           <div className="flex items-center justify-between border-t pt-4">
             <div className="flex space-x-2">
               <Button
@@ -78,17 +98,35 @@ function CreatePost() {
                 variant="ghost"
                 size="sm"
                 className="text-muted-foreground hover:text-primary"
-                onClick={() => setShowImageUpload(!showImageUpload)}
+                onClick={() => {
+                  setShowImageUpload(!showImageUpload);
+                  if (showVideoUpload) setShowVideoUpload(false);
+                }}
                 disabled={isPosting}
               >
                 <ImageIcon className="size-4 mr-2" />
                 Photo
               </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-primary"
+                onClick={() => {
+                  setShowVideoUpload(!showVideoUpload);
+                  if (showImageUpload) setShowImageUpload(false);
+                }}
+                disabled={isPosting}
+              >
+                <VideoIcon className="size-4 mr-2" />
+                Video
+              </Button>
             </div>
             <Button
               className="flex items-center"
               onClick={handleSubmit}
-              disabled={(!content.trim() && !imageUrl) || isPosting}
+              disabled={(!content.trim() && !imageUrl && !videoUrl) || isPosting}
             >
               {isPosting ? (
                 <>
@@ -108,4 +146,5 @@ function CreatePost() {
     </Card>
   );
 }
+
 export default CreatePost;

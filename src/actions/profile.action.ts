@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getDbUserId } from "./user.action";
 
@@ -23,6 +23,7 @@ export async function getProfileByUsername(username: string) {
             followers: true,
             following: true,
             posts: true,
+            reels: true,
           },
         },
       },
@@ -89,6 +90,60 @@ export async function getUserPosts(userId: string) {
   }
 }
 
+export async function getUserReels(userId: string) {
+  try {
+    const reels = await prisma.reel.findMany({
+      where: {
+        authorId: userId,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+          },
+        },
+        comments: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return reels;
+  } catch (error) {
+    console.error("Error fetching user reels:", error);
+    throw new Error("Failed to fetch user reels");
+  }
+}
+
 export async function getUserLikedPosts(userId: string) {
   try {
     const likedPosts = await prisma.post.findMany({
@@ -144,6 +199,64 @@ export async function getUserLikedPosts(userId: string) {
   } catch (error) {
     console.error("Error fetching liked posts:", error);
     throw new Error("Failed to fetch liked posts");
+  }
+}
+
+export async function getUserLikedReels(userId: string) {
+  try {
+    const likedReels = await prisma.reel.findMany({
+      where: {
+        likes: {
+          some: {
+            userId,
+          },
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+          },
+        },
+        comments: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return likedReels;
+  } catch (error) {
+    console.error("Error fetching liked reels:", error);
+    throw new Error("Failed to fetch liked reels");
   }
 }
 

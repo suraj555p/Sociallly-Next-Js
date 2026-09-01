@@ -1,6 +1,11 @@
 "use client";
 
-import { getProfileByUsername, getUserPosts, updateProfile } from "@/actions/profile.action";
+import {
+  getProfileByUsername,
+  getUserPosts,
+  getUserReels,
+  updateProfile,
+} from "@/actions/profile.action";
 import { toggleFollow } from "@/actions/user.action";
 import PostCard from "@/components/PostCard";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
@@ -27,17 +32,22 @@ import {
   HeartIcon,
   LinkIcon,
   MapPinIcon,
+  PlayIcon,
+  VideoIcon,
 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 type User = Awaited<ReturnType<typeof getProfileByUsername>>;
 type Posts = Awaited<ReturnType<typeof getUserPosts>>;
+type Reels = Awaited<ReturnType<typeof getUserReels>>;
 
 interface ProfilePageClientProps {
   user: NonNullable<User>;
   posts: Posts;
   likedPosts: Posts;
+  reels: Reels;
+  likedReels: Reels;
   isFollowing: boolean;
 }
 
@@ -45,6 +55,8 @@ function ProfilePageClient({
   isFollowing: initialIsFollowing,
   likedPosts,
   posts,
+  reels,
+  likedReels,
   user,
 }: ProfilePageClientProps) {
   const { user: currentUser } = useUser();
@@ -123,6 +135,11 @@ function ProfilePageClient({
                       <div className="font-semibold">{user._count.posts.toLocaleString()}</div>
                       <div className="text-sm text-muted-foreground">Posts</div>
                     </div>
+                    <Separator orientation="vertical" />
+                    <div>
+                      <div className="font-semibold">{user._count.reels.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">Reels</div>
+                    </div>
                   </div>
                 </div>
 
@@ -158,10 +175,10 @@ function ProfilePageClient({
                   {user.website && (
                     <div className="flex items-center text-muted-foreground">
                       <LinkIcon className="size-4 mr-2" />
-                      <a
+                      
                         href={
                           user.website.startsWith("http") ? user.website : `https://${user.website}`
-                        }
+                        } <a
                         className="hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -191,6 +208,14 @@ function ProfilePageClient({
               Posts
             </TabsTrigger>
             <TabsTrigger
+              value="reels"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
+               data-[state=active]:bg-transparent px-6 font-semibold"
+            >
+              <VideoIcon className="size-4" />
+              Reels
+            </TabsTrigger>
+            <TabsTrigger
               value="likes"
               className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
                data-[state=active]:bg-transparent px-6 font-semibold"
@@ -210,12 +235,51 @@ function ProfilePageClient({
             </div>
           </TabsContent>
 
+          <TabsContent value="reels" className="mt-6">
+            {reels.length > 0 ? (
+              <div className="grid grid-cols-3 gap-1">
+                {reels.map((reel) => (
+                  <div
+                    key={reel.id}
+                    className="relative aspect-[9/16] bg-muted rounded-sm overflow-hidden group cursor-pointer"
+                  >
+                    <video src={reel.videoUrl} className="w-full h-full object-cover" muted />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <PlayIcon className="size-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="absolute bottom-1 left-1 flex items-center gap-1 text-white text-xs">
+                      <HeartIcon className="size-3 fill-white" />
+                      {reel._count.likes}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">No reels yet</div>
+            )}
+          </TabsContent>
+
           <TabsContent value="likes" className="mt-6">
             <div className="space-y-6">
               {likedPosts.length > 0 ? (
                 likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
               ) : (
                 <div className="text-center py-8 text-muted-foreground">No liked posts to show</div>
+              )}
+              {likedReels.length > 0 && (
+                <div className="grid grid-cols-3 gap-1">
+                  {likedReels.map((reel) => (
+                    <div
+                      key={reel.id}
+                      className="relative aspect-[9/16] bg-muted rounded-sm overflow-hidden group cursor-pointer"
+                    >
+                      <video src={reel.videoUrl} className="w-full h-full object-cover" muted />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                        <PlayIcon className="size-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </TabsContent>
@@ -266,7 +330,7 @@ function ProfilePageClient({
               </div>
             </div>
             <div className="flex justify-end gap-3">
-              <DialogClose >
+              <DialogClose>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
               <Button onClick={handleEditSubmit}>Save Changes</Button>
