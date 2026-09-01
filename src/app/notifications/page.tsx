@@ -141,7 +141,7 @@ function NotificationsPage() {
                               <p>{notification.reel.caption}</p>
                             </div>
                             <video
-                              src={notification.reel.videoUrl}
+                              src={notification.reel?.videoUrl || undefined}
                               className="mt-2 rounded-md w-full max-w-[200px] h-auto object-cover"
                               muted
                             />

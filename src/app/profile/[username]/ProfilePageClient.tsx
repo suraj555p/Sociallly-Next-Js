@@ -243,7 +243,7 @@ function ProfilePageClient({
                     key={reel.id}
                     className="relative aspect-[9/16] bg-muted rounded-sm overflow-hidden group cursor-pointer"
                   >
-                    <video src={reel.videoUrl} className="w-full h-full object-cover" muted />
+                    <video src={reel.videoUrl || undefined} className="w-full h-full object-cover" muted />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                       <PlayIcon className="size-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
@@ -273,7 +273,7 @@ function ProfilePageClient({
                       key={reel.id}
                       className="relative aspect-[9/16] bg-muted rounded-sm overflow-hidden group cursor-pointer"
                     >
-                      <video src={reel.videoUrl} className="w-full h-full object-cover" muted />
+                      <video src={reel.videoUrl || undefined} className="w-full h-full object-cover" muted />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <PlayIcon className="size-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>

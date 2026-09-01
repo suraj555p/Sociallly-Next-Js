@@ -58,13 +58,6 @@ function ImageUpload({ endpoint, onChange, value }: ImageUploadProps) {
       onUploadError={(error: Error) => {
         console.error("Upload error:", error);
       }}
-      // ✅ Video ke liye accept config
-      config={{
-        accept: endpoint === "postVideo"
-          ? { "video/*": [".mp4", ".mov", ".avi", ".webm"] }
-          : { "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"] },
-        maxFiles: 1,
-      }}
     />
   );
 }
