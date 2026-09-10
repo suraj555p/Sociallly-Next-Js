@@ -175,10 +175,12 @@ function ProfilePageClient({
                   {user.website && (
                     <div className="flex items-center text-muted-foreground">
                       <LinkIcon className="size-4 mr-2" />
-                      
+                      <a
                         href={
-                          user.website.startsWith("http") ? user.website : `https://${user.website}`
-                        } <a
+                          user.website.startsWith("http")
+                            ? user.website
+                            : `https://${user.website}`
+                        }
                         className="hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -201,24 +203,21 @@ function ProfilePageClient({
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
             <TabsTrigger
               value="posts"
-              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
-               data-[state=active]:bg-transparent px-6 font-semibold"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
             >
               <FileTextIcon className="size-4" />
               Posts
             </TabsTrigger>
             <TabsTrigger
               value="reels"
-              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
-               data-[state=active]:bg-transparent px-6 font-semibold"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
             >
               <VideoIcon className="size-4" />
               Reels
             </TabsTrigger>
             <TabsTrigger
               value="likes"
-              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
-               data-[state=active]:bg-transparent px-6 font-semibold"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
             >
               <HeartIcon className="size-4" />
               Likes
@@ -237,13 +236,17 @@ function ProfilePageClient({
 
           <TabsContent value="reels" className="mt-6">
             {reels.length > 0 ? (
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-3 gap-1 sm:gap-2">
                 {reels.map((reel) => (
                   <div
                     key={reel.id}
                     className="relative aspect-[9/16] bg-muted rounded-sm overflow-hidden group cursor-pointer"
                   >
-                    <video src={reel.videoUrl || undefined} className="w-full h-full object-cover" muted />
+                    <video
+                      src={reel.videoUrl || undefined}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      muted
+                    />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                       <PlayIcon className="size-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
@@ -267,13 +270,17 @@ function ProfilePageClient({
                 <div className="text-center py-8 text-muted-foreground">No liked posts to show</div>
               )}
               {likedReels.length > 0 && (
-                <div className="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-3 gap-1 sm:gap-2">
                   {likedReels.map((reel) => (
                     <div
                       key={reel.id}
                       className="relative aspect-[9/16] bg-muted rounded-sm overflow-hidden group cursor-pointer"
                     >
-                      <video src={reel.videoUrl || undefined} className="w-full h-full object-cover" muted />
+                      <video
+                        src={reel.videoUrl || undefined}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        muted
+                      />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <PlayIcon className="size-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
@@ -341,4 +348,5 @@ function ProfilePageClient({
     </div>
   );
 }
+
 export default ProfilePageClient;

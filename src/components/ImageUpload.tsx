@@ -6,7 +6,7 @@ import { XIcon } from "lucide-react";
 interface ImageUploadProps {
   onChange: (url: string) => void;
   value: string;
-  endpoint: "postImage" | "postVideo";
+  endpoint: "postImage" | "postVideo" | "reelVideo"; 
 }
 
 function ImageUpload({ endpoint, onChange, value }: ImageUploadProps) {
@@ -14,7 +14,7 @@ function ImageUpload({ endpoint, onChange, value }: ImageUploadProps) {
   console.log(value);
 
   if (value) {
-    const isVideo = endpoint === "postVideo";
+    const isVideo = endpoint === "postVideo" || endpoint === "reelVideo";
 
     return (
       <div className="relative size-40">

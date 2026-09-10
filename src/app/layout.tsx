@@ -5,9 +5,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
-import {Toaster} from "react-hot-toast"
-//import "@uploadthing/react/styles.css";
-
+import BottomNav from "@/components/BottomNav";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +31,8 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html
-        lang="en" suppressHydrationWarning
+        lang="en"
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col">
@@ -48,19 +48,26 @@ export default function RootLayout({
               <main className="py-8">
                 <div className="max-w-7xl mx-auto px-4">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Sidebar – desktop only */}
                     <div className="hidden lg:block lg:col-span-3">
-                      <Sidebar/>
+                      <Sidebar />
                     </div>
 
+                    {/* Main content */}
                     <div className="lg:col-span-9">
                       {children}
                     </div>
                   </div>
                 </div>
               </main>
+
+              {/* Bottom navigation – mobile */}
+              <BottomNav />
             </div>
+
+            {/* Global toasts */}
+            <Toaster />
           </ThemeProvider>
-          <Toaster/>
         </body>
       </html>
     </ClerkProvider>
