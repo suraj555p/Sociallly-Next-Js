@@ -222,11 +222,26 @@ export async function createReelComment(
       return [newComment];
     });
 
+    // Author ke saath comment fetch karo
+    const commentWithAuthor = await prisma.reelComment.findUnique({
+      where: { id: comment.id },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            image: true,
+            name: true,
+          },
+        },
+      },
+    });
+
     revalidatePath("/reels");
 
     return {
       success: true,
-      comment,
+      comment: commentWithAuthor,
     };
   } catch (error) {
     console.error("Failed to create reel comment:", error);

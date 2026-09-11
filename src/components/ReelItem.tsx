@@ -11,12 +11,12 @@ import {
   SendIcon,
   Volume2Icon,
   VolumeXIcon,
+  Loader2Icon,
 } from "lucide-react";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { toggleReelLike, createReelComment } from "@/actions/reel.action";
+import { toggleReelLike, createReelComment, getReels } from "@/actions/reel.action";
 import { toggleFollow } from "@/actions/user.action";
-import { getReels } from "@/actions/reel.action";
 import toast from "react-hot-toast";
 
 type Reel = Awaited<ReturnType<typeof getReels>>[number];
@@ -26,24 +26,31 @@ interface ReelItemProps {
 }
 
 export default function ReelItem({ reel }: ReelItemProps) {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isLiked, setIsLiked] = useState(
-    reel.likes.some((like) => like.userId === user?.id)
-  );
+
+  const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(reel._count.likes);
+  const [isLiking, setIsLiking] = useState(false);
+
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(reel.comments);
+  const [isCommenting, setIsCommenting] = useState(false);
+
   const [isPlaying, setIsPlaying] = useState(false);
-  // Browsers autoplay ONLY muted videos, isliye start muted=true
-  // aur user ko ek button se unmute karne do
   const [isMuted, setIsMuted] = useState(true);
 
   const isOwnReel = user?.id === reel.author.id;
 
-  // Auto-play jab reel visible ho
+  useEffect(() => {
+    if (!isLoaded) return;
+    setIsLiked(reel.likes.some((like) => like.userId === user?.id));
+  }, [isLoaded, user?.id, reel.likes]);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -67,7 +74,6 @@ export default function ReelItem({ reel }: ReelItemProps) {
     return () => observer.disconnect();
   }, []);
 
-  // isMuted state ko actual <video> element ke saath sync rakho
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -80,10 +86,29 @@ export default function ReelItem({ reel }: ReelItemProps) {
       return;
     }
 
-    const result = await toggleReelLike(reel.id);
-    if (result.success) {
-      setIsLiked(!isLiked);
-      setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+    if (isLiking) return;
+
+    const prevLiked = isLiked;
+    const prevCount = likeCount;
+    const nextLiked = !prevLiked;
+
+    setIsLiking(true);
+    setIsLiked(nextLiked);
+    setLikeCount((c) => (prevLiked ? c - 1 : c + 1));
+
+    try {
+      const result = await toggleReelLike(reel.id);
+      if (!result.success) {
+        setIsLiked(prevLiked);
+        setLikeCount(prevCount);
+        toast.error("Couldn't update like, try again");
+      }
+    } catch {
+      setIsLiked(prevLiked);
+      setLikeCount(prevCount);
+      toast.error("Couldn't update like, try again");
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -92,31 +117,73 @@ export default function ReelItem({ reel }: ReelItemProps) {
       toast.error("Please login to follow users");
       return;
     }
+    if (isFollowLoading) return;
 
-    const result = await toggleFollow(reel.author.id);
-    if (result.success) {
-      setIsFollowing(!isFollowing);
-      toast.success(isFollowing ? "Unfollowed" : "Following");
+    const prevFollowing = isFollowing;
+    setIsFollowLoading(true);
+    setIsFollowing(!prevFollowing);
+
+    try {
+      const result = await toggleFollow(reel.author.id);
+      if (result?.success) {
+        toast.success(prevFollowing ? "Unfollowed" : "Following");
+      } else {
+        setIsFollowing(prevFollowing);
+        toast.error("Couldn't update follow status");
+      }
+    } catch {
+      setIsFollowing(prevFollowing);
+      toast.error("Couldn't update follow status");
+    } finally {
+      setIsFollowLoading(false);
     }
   };
 
   const handleComment = async () => {
-    if (!user || !commentText.trim()) return;
+    if (!user || !commentText.trim() || isCommenting) return;
 
-    const result = await createReelComment(reel.id, commentText);
-    if (result.success && result.comment) {
-      setComments([...comments, result.comment]);
-      setCommentText("");
-      toast.success("Comment added");
+    setIsCommenting(true);
+    try {
+      const result = await createReelComment(reel.id, commentText.trim());
+      if (result.success && result.comment) {
+        setComments((prev) => [...prev, result.comment!]);
+        setCommentText("");
+        toast.success("Comment added");
+      } else {
+        toast.error("Couldn't add comment, try again");
+      }
+    } catch {
+      toast.error("Couldn't add comment, try again");
+    } finally {
+      setIsCommenting(false);
     }
   };
 
-  const handleDownload = () => {
-    const a = document.createElement("a");
-    a.href = reel.videoUrl;
-    a.download = `reel-${reel.id}.mp4`;
-    a.target = "_blank";
-    a.click();
+  const handleDownload = async () => {
+    if (!reel.videoUrl) {
+      toast.error("Video URL not available");
+      return;
+    }
+
+    try {
+      const response = await fetch(reel.videoUrl);
+      if (!response.ok) throw new Error("fetch failed");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `reel-${reel.id}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      toast.error("Direct download blocked, opening video in a new tab");
+      if (reel.videoUrl) {
+        window.open(reel.videoUrl, "_blank");
+      }
+    }
   };
 
   const togglePlayPause = () => {
@@ -132,22 +199,22 @@ export default function ReelItem({ reel }: ReelItemProps) {
   };
 
   const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation(); // video ka click (play/pause) trigger na ho
+    e.stopPropagation();
     setIsMuted((prev) => !prev);
   };
 
   return (
     <div className="relative h-screen w-full snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
-      {/* Video Container - mobile pe chhota fixed size, desktop pe thoda bada */}
+      {/* Video Container */}
       <div
-        className="relative w-full max-w-[380px] mx-auto rounded-xl overflow-hidden
+        className="relative w-full max-w-[380px] mx-auto rounded-2xl overflow-hidden shadow-2xl
                    h-[65vh] max-h-[560px]
                    sm:h-[70vh] sm:max-h-[600px]
                    md:h-[75vh] md:max-h-[680px]"
       >
         <video
           ref={videoRef}
-          src={reel.videoUrl}
+          src={reel.videoUrl ?? undefined}
           className="h-full w-full object-cover"
           loop
           muted={isMuted}
@@ -158,11 +225,13 @@ export default function ReelItem({ reel }: ReelItemProps) {
         {/* Play/Pause Indicator */}
         {!isPlaying && (
           <div
-            className="absolute inset-0 flex items-center justify-center bg-black/20 cursor-pointer"
+            className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[2px] cursor-pointer
+                       transition-all duration-300"
             onClick={togglePlayPause}
           >
-            <div className="h-16 w-16 rounded-full bg-white/80 flex items-center justify-center">
-              <svg className="h-8 w-8 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
+            <div className="h-20 w-20 rounded-full bg-white/90 flex items-center justify-center shadow-lg
+                           hover:scale-110 transition-transform">
+              <svg className="h-10 w-10 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
@@ -172,7 +241,8 @@ export default function ReelItem({ reel }: ReelItemProps) {
         {/* Mute / Unmute Button */}
         <button
           onClick={toggleMute}
-          className="absolute top-3 right-3 z-20 h-9 w-9 rounded-full bg-black/50 flex items-center justify-center"
+          className="absolute top-4 right-4 z-20 h-10 w-10 rounded-full bg-black/60 backdrop-blur-md
+                     flex items-center justify-center hover:bg-black/80 transition-colors"
         >
           {isMuted ? (
             <VolumeXIcon className="h-5 w-5 text-white" />
@@ -181,104 +251,174 @@ export default function ReelItem({ reel }: ReelItemProps) {
           )}
         </button>
 
-        {/* Bottom Info Bar - ab video container ke andar hai, taaki bade screen pe bhi sahi position pe rahe */}
-        <div className="absolute left-0 right-0 bottom-0 flex items-end gap-3 p-4 bg-gradient-to-t from-black/80 to-transparent z-10">
-          <Avatar className="h-10 w-10 border-2 border-white">
-            <AvatarImage src={reel.author.image ?? "/avatar.png"} />
-          </Avatar>
+        {/* Right Side Action Bar - Upper Center, Rightmost */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-5 z-20">
+          {/* Like */}
+          <button
+            onClick={handleLike}
+            disabled={isLiking}
+            className="group flex flex-col items-center gap-1 disabled:opacity-60 transition-opacity"
+          >
+            <div className="h-12 w-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center
+                           group-hover:bg-black/70 transition-colors">
+              <HeartIcon
+                className={`h-7 w-7 transition-colors ${
+                  isLiked ? "fill-red-500 text-red-500" : "text-white"
+                }`}
+              />
+            </div>
+            <span className="text-xs font-medium text-white drop-shadow-md">{likeCount}</span>
+          </button>
 
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-white">@{reel.author.username}</span>
-              {!isOwnReel && (
-                <Button
-                  size="sm"
-                  variant={isFollowing ? "outline" : "default"}
-                  onClick={handleFollow}
-                  className="h-7 text-xs"
-                >
-                  {isFollowing ? "Following" : "Follow"}
-                </Button>
+          {/* Comment */}
+          <button
+            onClick={() => setShowComments(!showComments)}
+            className="group flex flex-col items-center gap-1"
+          >
+            <div className="h-12 w-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center
+                           group-hover:bg-black/70 transition-colors">
+              <MessageCircleIcon className="h-7 w-7 text-white" />
+            </div>
+            <span className="text-xs font-medium text-white drop-shadow-md">{comments.length}</span>
+          </button>
+
+          {/* Save/Bookmark */}
+          <button className="group flex flex-col items-center gap-1">
+            <div className="h-12 w-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center
+                           group-hover:bg-black/70 transition-colors">
+              <BookmarkIcon className="h-7 w-7 text-white" />
+            </div>
+            <span className="text-xs font-medium text-white drop-shadow-md">Save</span>
+          </button>
+
+          {/* Download */}
+          <button
+            onClick={handleDownload}
+            className="group flex flex-col items-center gap-1"
+          >
+            <div className="h-12 w-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center
+                           group-hover:bg-black/70 transition-colors">
+              <DownloadIcon className="h-7 w-7 text-white" />
+            </div>
+            <span className="text-xs font-medium text-white drop-shadow-md">Download</span>
+          </button>
+        </div>
+
+        {/* Bottom Info Bar */}
+        <div className="absolute left-0 right-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10">
+          <div className="flex items-end gap-3">
+            <Avatar className="h-11 w-11 border-2 border-white/90 shadow-md">
+              <AvatarImage src={reel.author.image ?? undefined} />
+              <AvatarFallback className="text-sm font-semibold">
+                {reel.author.username?.[0]?.toUpperCase() ?? "U"}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 pb-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-white text-sm drop-shadow-md">
+                  @{reel.author.username}
+                </span>
+                {!isOwnReel && (
+                  <Button
+                    size="sm"
+                    variant={isFollowing ? "outline" : "default"}
+                    onClick={handleFollow}
+                    disabled={isFollowLoading}
+                    className="h-7 text-xs rounded-full px-3 bg-white/20 hover:bg-white/30 border-0"
+                  >
+                    {isFollowLoading ? (
+                      <Loader2Icon className="h-3 w-3 animate-spin" />
+                    ) : isFollowing ? (
+                      "Following"
+                    ) : (
+                      "Follow"
+                    )}
+                  </Button>
+                )}
+              </div>
+              {reel.caption && (
+                <p className="mt-1 text-sm text-white/90 line-clamp-2 drop-shadow-md">{reel.caption}</p>
               )}
             </div>
-            {reel.caption && (
-              <p className="mt-1 text-sm text-white line-clamp-2">{reel.caption}</p>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Right Side Action Bar */}
-      <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4 z-10">
-        {/* Like */}
-        <button onClick={handleLike} className="flex flex-col items-center">
-          <HeartIcon
-            className={`h-8 w-8 ${isLiked ? "fill-red-500 text-red-500" : "text-white"}`}
-          />
-          <span className="text-xs text-white">{likeCount}</span>
-        </button>
-
-        {/* Comment */}
-        <button
-          onClick={() => setShowComments(!showComments)}
-          className="flex flex-col items-center"
-        >
-          <MessageCircleIcon className="h-8 w-8 text-white" />
-          <span className="text-xs text-white">{comments.length}</span>
-        </button>
-
-        {/* Save/Bookmark */}
-        <button className="flex flex-col items-center">
-          <BookmarkIcon className="h-8 w-8 text-white" />
-          <span className="text-xs text-white">Save</span>
-        </button>
-
-        {/* Download */}
-        <button onClick={handleDownload} className="flex flex-col items-center">
-          <DownloadIcon className="h-8 w-8 text-white" />
-          <span className="text-xs text-white">Download</span>
-        </button>
-      </div>
-
       {/* Comments Section */}
       {showComments && (
-        <div className="absolute inset-0 bg-black/50 z-50" onClick={() => setShowComments(false)}>
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end"
+          onClick={() => setShowComments(false)}
+        >
           <div
-            className="absolute bottom-0 left-0 right-0 max-h-[70%] bg-white dark:bg-gray-900 rounded-t-2xl p-4 overflow-y-auto"
+            className="w-full max-h-[70%] bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950
+                       rounded-t-3xl p-5 overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-semibold mb-3">Comments ({comments.length})</h3>
-            <div className="space-y-3 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                Comments ({comments.length})
+              </h3>
+              <button
+                onClick={() => setShowComments(false)}
+                className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-4">
               {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={comment.author.image ?? "/avatar.png"} />
+                <div key={comment.id} className="flex gap-3">
+                  <Avatar className="h-9 w-9 flex-shrink-0">
+                    <AvatarImage src={comment.author.image ?? undefined} />
+                    <AvatarFallback className="text-xs font-semibold">
+                      {comment.author.username?.[0]?.toUpperCase() ?? "U"}
+                    </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">@{comment.author.username}</span>
-                      <span className="text-xs text-gray-500">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        @{comment.author.username}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(comment.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-sm">{comment.content}</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">{comment.content}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {user && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Add a comment..."
-                  className="flex-1 rounded-full border px-4 py-2 text-sm"
+                  className="flex-1 rounded-full border border-gray-300 dark:border-gray-700
+                             px-4 py-2.5 text-sm bg-white dark:bg-gray-800
+                             text-gray-900 dark:text-white
+                             focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onKeyDown={(e) => e.key === "Enter" && handleComment()}
+                  disabled={isCommenting}
                 />
-                <Button size="sm" onClick={handleComment} disabled={!commentText.trim()}>
-                  <SendIcon className="h-4 w-4" />
+                <Button
+                  size="sm"
+                  onClick={handleComment}
+                  disabled={!commentText.trim() || isCommenting}
+                  className="h-10 w-10 rounded-full p-0 flex items-center justify-center
+                             bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700
+                             transition-all shadow-md"
+                >
+                  {isCommenting ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin text-white" />
+                  ) : (
+                    <SendIcon className="h-4 w-4 text-white" />
+                  )}
                 </Button>
               </div>
             )}
