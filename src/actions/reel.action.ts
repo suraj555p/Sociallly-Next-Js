@@ -300,3 +300,61 @@ export async function deleteReel(reelId: string) {
   }
 }
 
+export async function deleteReelComment(commentId: string) {
+  try {
+    const userId = await getDbUserId();
+
+    if (!userId) {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+
+    const comment = await prisma.reelComment.findUnique({
+      where: {
+        id: commentId,
+      },
+      select: {
+        id: true,
+        authorId: true,
+      },
+    });
+
+    if (!comment) {
+      return {
+        success: false,
+        error: "Comment not found",
+      };
+    }
+
+    // Sirf jis user ne comment kiya hai wahi delete kar sakta hai
+    if (comment.authorId !== userId) {
+      return {
+        success: false,
+        error: "You can only delete your own comment",
+      };
+    }
+
+    await prisma.reelComment.delete({
+      where: {
+        id: commentId,
+      },
+    });
+
+    revalidatePath("/reels");
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Failed to delete reel comment:", error);
+
+    return {
+      success: false,
+      error: "Failed to delete reel comment",
+    };
+  }
+}
+
+
