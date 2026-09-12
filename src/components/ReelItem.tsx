@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   HeartIcon,
@@ -30,6 +31,7 @@ import {
   toggleReelLike,
   createReelComment,
   deleteReelComment,
+  deleteReel,
   getReels,
 } from "@/actions/reel.action";
 
@@ -41,10 +43,12 @@ type Reel = Awaited<ReturnType<typeof getReels>>[number];
 
 interface ReelItemProps {
   reel: Reel;
+  currentDbUserId: string | null;
 }
 
-export default function ReelItem({ reel }: ReelItemProps) {
+export default function ReelItem({ reel, currentDbUserId }: ReelItemProps) {
   const { user, isLoaded } = useUser();
+  const router = useRouter();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -78,12 +82,18 @@ export default function ReelItem({ reel }: ReelItemProps) {
   const [isDeletingComment, setIsDeletingComment] =
     useState<string | null>(null);
 
+  /* ----------------------------- DELETE REEL ----------------------------- */
+
+  const [isDeletingReel, setIsDeletingReel] = useState(false);
+
   /* ----------------------------- VIDEO ---------------------------- */
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
-  const isOwnReel = user?.id === reel.author.id;
+  const isOwnReel = Boolean(
+    currentDbUserId && currentDbUserId === reel.author.id
+  );
 
   /* ---------------------------------------------------------------- */
   /*                              LIKE                                */
@@ -170,7 +180,6 @@ export default function ReelItem({ reel }: ReelItemProps) {
 
     setIsLiking(true);
 
-    // Optimistic UI
     setIsLiked(nextLiked);
 
     setLikeCount((count) =>
@@ -220,7 +229,6 @@ export default function ReelItem({ reel }: ReelItemProps) {
 
     setIsFollowLoading(true);
 
-    // Optimistic UI
     setIsFollowing(!previousFollowing);
 
     try {
@@ -320,7 +328,6 @@ export default function ReelItem({ reel }: ReelItemProps) {
         await deleteReelComment(commentId);
 
       if (result.success) {
-        // Remove immediately from UI
         setComments((previous) =>
           previous.filter(
             (comment) =>
@@ -341,6 +348,39 @@ export default function ReelItem({ reel }: ReelItemProps) {
       );
     } finally {
       setIsDeletingComment(null);
+    }
+  };
+
+  /* ---------------------------------------------------------------- */
+  /*                          DELETE REEL                              */
+  /* ---------------------------------------------------------------- */
+
+  const handleDeleteReel = async () => {
+    if (!isOwnReel || isDeletingReel) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this reel? This cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    setIsDeletingReel(true);
+
+    try {
+      const result = await deleteReel(reel.id);
+
+      if (result.success) {
+        toast.success("Reel deleted");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Couldn't delete reel");
+
+        setIsDeletingReel(false);
+      }
+    } catch {
+      toast.error("Couldn't delete reel");
+
+      setIsDeletingReel(false);
     }
   };
 
@@ -487,6 +527,24 @@ export default function ReelItem({ reel }: ReelItemProps) {
           </div>
 
           <div className="flex items-center gap-3">
+
+            {/* DELETE - sirf apni reel par dikhega */}
+
+            {isOwnReel && (
+              <button
+                onClick={handleDeleteReel}
+                disabled={isDeletingReel}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-md transition hover:bg-red-600/80 active:scale-90 disabled:opacity-60"
+                aria-label="Delete reel"
+                title="Delete reel"
+              >
+                {isDeletingReel ? (
+                  <Loader2Icon className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Trash2Icon className="h-5 w-5" />
+                )}
+              </button>
+            )}
 
             {/* MUTE */}
 
@@ -667,7 +725,7 @@ export default function ReelItem({ reel }: ReelItemProps) {
         {/*                       BOTTOM INFO                         */}
         {/* ======================================================== */}
 
-        <div className="absolute bottom-0 left-0 right-16 z-20 p-4 pb-[max(18px,env(safe-area-inset-bottom))]">
+        <div className="absolute bottom-40 left-0 right-16 z-20 p-4 pb-[max(18px,env(safe-area-inset-bottom))]">
 
           {/* AUTHOR */}
 

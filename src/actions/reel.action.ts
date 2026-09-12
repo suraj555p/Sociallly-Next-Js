@@ -92,6 +92,61 @@ export async function getReels() {
   }
 }
 
+export async function getReelById(reelId : string) {
+  try {
+    const reel = await prisma.reel.findUnique({
+      where: {
+        id: reelId,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            username: true,
+          },
+        },
+        comments: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                image: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+    });
+
+    if (!reel) {
+      throw new Error("Reel not found");
+    }
+
+    return reel;
+  } catch (error) {
+    console.error("Error in getReelById:", error);
+    throw new Error("Failed to fetch reel");
+  }
+}
+
 export async function toggleReelLike(reelId: string) {
   try {
     const userId = await getDbUserId();

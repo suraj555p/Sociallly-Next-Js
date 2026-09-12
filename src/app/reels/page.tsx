@@ -1,16 +1,17 @@
 // src/app/reels/page.tsx
 import { getReels } from "@/actions/reel.action";
+import { getDbUserId } from "@/actions/user.action";
 import ReelsFeed from "@/components/ReelsFeed";
 
 export default async function ReelsPage() {
   const reels = await getReels();
+  const currentDbUserId = await getDbUserId();
 
   return (
-  <div className="h-screen bg-gray-100 flex justify-center">
-  <div className="h-full w-full max-w-[430px] bg-black overflow-hidden">
-    <ReelsFeed initialReels={reels} />
-  </div>
-</div>
-
+    <div className="min-h-screen bg-gray-100 flex justify-center">
+      <div className="w-full max-w-[390px] h-screen bg-black overflow-hidden">
+        <ReelsFeed initialReels={reels} currentDbUserId={currentDbUserId} />
+      </div>
+    </div>
   );
 }
