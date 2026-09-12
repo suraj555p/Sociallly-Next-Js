@@ -651,11 +651,9 @@ function ProfilePageClient({
 
             <div className="flex justify-end gap-3">
 
-              <DialogClose asChild>
-                <Button variant="outline">
-                  Cancel
-                </Button>
-              </DialogClose>
+         <DialogClose render={<Button variant="outline" />}>
+  Cancel
+</DialogClose>
 
               <Button onClick={handleEditSubmit}>
                 Save Changes
