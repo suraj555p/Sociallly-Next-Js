@@ -34,7 +34,6 @@ export default function ReelsGrid({ reels }: ReelsGridProps) {
 
   return (
     <div>
-      {/* SEARCH BAR */}
       <div className="relative mb-4">
         <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
@@ -57,7 +56,6 @@ export default function ReelsGrid({ reels }: ReelsGridProps) {
         )}
       </div>
 
-      {/* RESULTS */}
       {filteredReels.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           {query ? `No results for "${query}"` : "No reels yet"}
@@ -138,14 +136,12 @@ function GridThumbnail({ reel }: { reel: Reels[number] }) {
         </div>
       </div>
 
-      {/* USERNAME BADGE */}
       <div className="absolute top-2 left-2 right-2">
         <span className="text-white text-xs font-medium drop-shadow truncate block">
           @{reel.author.username}
         </span>
       </div>
 
-      {/* LIKES */}
       <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs font-medium drop-shadow">
         <HeartIcon className="size-3 fill-white" />
         {reel._count.likes}

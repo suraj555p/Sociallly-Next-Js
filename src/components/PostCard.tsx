@@ -82,7 +82,6 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
               </Avatar>
             </Link>
 
-            {/* POST HEADER & TEXT CONTENT */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 truncate">
@@ -98,7 +97,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                     <span>{formatDistanceToNow(new Date(post.createdAt))} ago</span>
                   </div>
                 </div>
-                {/* Check if current user is the post author */}
+            
                 {dbUserId === post.author.id && (
                   <DeleteAlertDialog isDeleting={isDeleting} onDelete={handleDeletePost} />
                 )}
@@ -107,14 +106,12 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
             </div>
           </div>
 
-          {/* POST IMAGE */}
           {post.image && (
             <div className="rounded-lg overflow-hidden">
               <img src={post.image} alt="Post content" className="w-full h-auto object-cover" />
             </div>
           )}
 
-          {/* POST VIDEO - Instagram Style */}
           {post.video && (
             <div className="relative w-full bg-black rounded-lg overflow-hidden">
               <div className="relative aspect-[4/5] sm:aspect-square">
@@ -129,7 +126,6 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                 </video>
               </div>
 
-              {/* Video indicator badge */}
               <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
                 <PlayIcon className="size-3" />
                 Video
@@ -137,7 +133,6 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
             </div>
           )}
 
-          {/* LIKE & COMMENT BUTTONS */}
           <div className="flex items-center pt-2 space-x-4">
             {user ? (
               <Button
@@ -177,7 +172,6 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
             </Button>
           </div>
 
-          {/* COMMENTS SECTION */}
           {showComments && (
             <div className="space-y-4 pt-4 border-t">
               <div className="space-y-4">

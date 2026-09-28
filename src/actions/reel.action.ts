@@ -277,7 +277,6 @@ export async function createReelComment(
       return [newComment];
     });
 
-    // Author ke saath comment fetch karo
     const commentWithAuthor = await prisma.reelComment.findUnique({
       where: { id: comment.id },
       include: {
@@ -383,7 +382,6 @@ export async function deleteReelComment(commentId: string) {
       };
     }
 
-    // Sirf jis user ne comment kiya hai wahi delete kar sakta hai
     if (comment.authorId !== userId) {
       return {
         success: false,

@@ -1,4 +1,4 @@
-// src/app/reels/page.tsx
+
 import { getReels } from "@/actions/reel.action";
 import { getDbUserId } from "@/actions/user.action";
 import ReelsFeed from "@/components/ReelsFeed";

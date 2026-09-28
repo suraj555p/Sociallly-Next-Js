@@ -108,7 +108,6 @@ function NotificationsPage() {
                       </span>
                     </div>
 
-                    {/* Post-related notifications */}
                     {notification.post &&
                       (notification.type === "LIKE" || notification.type === "COMMENT") && (
                         <div className="pl-6 space-y-2">
@@ -131,7 +130,6 @@ function NotificationsPage() {
                         </div>
                       )}
 
-                    {/* Reel-related notifications */}
                     {notification.reel &&
                       (notification.type === "REEL_LIKE" || notification.type === "REEL_COMMENT") && (
                         <div className="pl-6 space-y-2">

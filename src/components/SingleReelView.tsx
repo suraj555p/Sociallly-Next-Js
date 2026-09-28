@@ -1,4 +1,3 @@
-// src/components/SingleReelView.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -52,18 +51,12 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  /* ----------------------------- LIKE ----------------------------- */
-
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(reel._count.likes);
   const [isLiking, setIsLiking] = useState(false);
 
-  /* ---------------------------- FOLLOW ---------------------------- */
-
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-
-  /* --------------------------- COMMENTS --------------------------- */
 
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -73,34 +66,19 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
     null
   );
 
-  /* ----------------------------- DELETE REEL ----------------------------- */
-
   const [isDeletingReel, setIsDeletingReel] = useState(false);
-
-  /* ----------------------------- VIDEO ---------------------------- */
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
-  // DEBUG: console.log se check kar lo dono id match ho rahe hain ya nahi
-  // console.log("current user id:", user?.id, "reel author id:", reel.author.id);
-
   const isOwnReel = Boolean(currentDbUserId && currentDbUserId === reel.author.id);
   console.log("isOwnReel:", isOwnReel, "user id:", currentDbUserId, "reel author id:", reel.author.id);
-
-  /* ---------------------------------------------------------------- */
-  /*                              LIKE                                */
-  /* ---------------------------------------------------------------- */
 
   useEffect(() => {
     if (!isLoaded) return;
 
     setIsLiked(reel.likes.some((like) => like.userId === user?.id));
   }, [isLoaded, user?.id, reel.likes]);
-
-  /* ---------------------------------------------------------------- */
-  /*                       AUTOPLAY ON MOUNT                          */
-  /* ---------------------------------------------------------------- */
 
   useEffect(() => {
     const video = videoRef.current;
@@ -115,10 +93,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
       .catch(() => {});
   }, []);
 
-  /* ---------------------------------------------------------------- */
-  /*                            MUTE                                  */
-  /* ---------------------------------------------------------------- */
-
   useEffect(() => {
     const video = videoRef.current;
 
@@ -126,10 +100,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
 
     video.muted = isMuted;
   }, [isMuted]);
-
-  /* ---------------------------------------------------------------- */
-  /*                            LIKE                                  */
-  /* ---------------------------------------------------------------- */
 
   const handleLike = async () => {
     if (!user) {
@@ -168,10 +138,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /*                           FOLLOW                                 */
-  /* ---------------------------------------------------------------- */
-
   const handleFollow = async () => {
     if (!user) {
       toast.error("Please login to follow users");
@@ -204,10 +170,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /*                         CREATE COMMENT                            */
-  /* ---------------------------------------------------------------- */
-
   const handleComment = async () => {
     if (!user || !commentText.trim() || isCommenting) {
       return;
@@ -233,10 +195,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
       setIsCommenting(false);
     }
   };
-
-  /* ---------------------------------------------------------------- */
-  /*                         DELETE COMMENT                            */
-  /* ---------------------------------------------------------------- */
 
   const handleDeleteComment = async (commentId: string) => {
     if (!user) {
@@ -266,10 +224,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
       setIsDeletingComment(null);
     }
   };
-
-  /* ---------------------------------------------------------------- */
-  /*                          DELETE REEL                              */
-  /* ---------------------------------------------------------------- */
 
   const handleDeleteReel = async () => {
     if (!user || !isOwnReel || isDeletingReel) {
@@ -304,10 +258,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /*                           DOWNLOAD                               */
-  /* ---------------------------------------------------------------- */
-
   const handleDownload = async () => {
     if (!reel.videoUrl) {
       toast.error("Video URL not available");
@@ -341,10 +291,6 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /*                         PLAY / PAUSE                             */
-  /* ---------------------------------------------------------------- */
-
   const togglePlayPause = () => {
     const video = videoRef.current;
 
@@ -363,19 +309,11 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /*                              MUTE                                */
-  /* ---------------------------------------------------------------- */
-
   const toggleMute = (event?: React.MouseEvent) => {
     event?.stopPropagation();
 
     setIsMuted((previous) => !previous);
   };
-
-  /* ---------------------------------------------------------------- */
-  /*                         COMMENTS TOGGLE                          */
-  /* ---------------------------------------------------------------- */
 
   const toggleComments = () => {
     setShowComments((previous) => !previous);
@@ -384,9 +322,9 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
   return (
     <div className="min-h-screen w-full bg-gray-100 flex justify-center">
       <div className="relative flex h-screen w-full max-w-[430px] items-center justify-center overflow-hidden bg-black text-white">
-        {/* ============================================================ */}
-        {/*                           VIDEO                              */}
-        {/* ============================================================ */}
+        {}
+        {}
+        {}
 
         <div className="relative h-full w-full overflow-hidden bg-black">
           <video
@@ -400,18 +338,18 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
             onClick={togglePlayPause}
           />
 
-          {/* TOP GRADIENT */}
+          {}
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-36 bg-gradient-to-b from-black/60 via-black/20 to-transparent" />
 
-          {/* BOTTOM GRADIENT */}
+          {}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[48%] bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
 
-          {/* ======================================================== */}
-          {/*                         TOP BAR                           */}
-          {/* ======================================================== */}
+          {}
+          {}
+          {}
 
           <div className="absolute left-0 right-0 top-0 z-30 flex items-center justify-between px-4 pt-[max(16px,env(safe-area-inset-top))]">
-            {/* BACK BUTTON */}
+            {}
             <button
               onClick={() => router.back()}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-md transition hover:bg-black/60 active:scale-90"
@@ -421,7 +359,7 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
             </button>
 
             <div className="flex items-center gap-3">
-              {/* DELETE - sirf apni reel par dikhega */}
+              {}
               {isOwnReel && (
                 <button
                   onClick={handleDeleteReel}
@@ -438,7 +376,7 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
                 </button>
               )}
 
-              {/* MUTE */}
+              {}
               <button
                 onClick={(event) => toggleMute(event)}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-md transition hover:bg-black/60 active:scale-90"
@@ -453,9 +391,9 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
             </div>
           </div>
 
-          {/* ======================================================== */}
-          {/*                    PLAY INDICATOR                         */}
-          {/* ======================================================== */}
+          {}
+          {}
+          {}
 
           {!isPlaying && (
             <button
@@ -469,12 +407,12 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
             </button>
           )}
 
-          {/* ======================================================== */}
-          {/*                    RIGHT ACTION BAR                       */}
-          {/* ======================================================== */}
+          {}
+          {}
+          {}
 
           <div className="absolute bottom-28 right-3 z-30 flex flex-col items-center gap-5">
-            {/* LIKE */}
+            {}
             <button
               onClick={handleLike}
               disabled={isLiking}
@@ -492,7 +430,7 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
               </span>
             </button>
 
-            {/* COMMENTS */}
+            {}
             <button
               onClick={toggleComments}
               className="flex flex-col items-center gap-1 transition active:scale-90"
@@ -504,7 +442,7 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
               </span>
             </button>
 
-            {/* SHARE */}
+            {}
             <button
               onClick={() => {
                 if (typeof navigator !== "undefined" && navigator.share) {
@@ -526,12 +464,12 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
               <SendIcon className="h-8 w-8 drop-shadow-lg" strokeWidth={1.8} />
             </button>
 
-            {/* SAVE */}
+            {}
             <button className="transition active:scale-90" aria-label="Save reel">
               <BookmarkIcon className="h-8 w-8 drop-shadow-lg" strokeWidth={1.8} />
             </button>
 
-            {/* DOWNLOAD */}
+            {}
             <button
               onClick={handleDownload}
               className="transition active:scale-90"
@@ -540,7 +478,7 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
               <DownloadIcon className="h-7 w-7 drop-shadow-lg" strokeWidth={1.8} />
             </button>
 
-            {/* AUTHOR AVATAR */}
+            {}
             <Avatar className="mt-1 h-9 w-9 border border-white shadow-lg">
               <AvatarImage src={reel.author.image ?? undefined} className="object-cover" />
               <AvatarFallback className="bg-gray-800 text-xs">
@@ -549,12 +487,12 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
             </Avatar>
           </div>
 
-          {/* ======================================================== */}
-          {/*                       BOTTOM INFO                         */}
-          {/* ======================================================== */}
+          {}
+          {}
+          {}
 
           <div className="absolute bottom-40 left-0 right-16 z-20 p-4 pb-[max(18px,env(safe-area-inset-bottom))]">
-            {/* AUTHOR */}
+            {}
             <div className="mb-3 flex items-center gap-2">
               <Avatar className="h-9 w-9 border border-white shadow-md">
                 <AvatarImage src={reel.author.image ?? undefined} />
@@ -586,14 +524,14 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
               )}
             </div>
 
-            {/* CAPTION */}
+            {}
             {reel.caption && (
               <p className="mb-3 max-w-[90%] text-sm leading-5 text-white drop-shadow-md line-clamp-2">
                 {reel.caption}
               </p>
             )}
 
-            {/* ORIGINAL AUDIO */}
+            {}
             <div className="flex max-w-[90%] items-center gap-2 text-xs text-white/90">
               <div className="flex h-3 items-end gap-[2px]">
                 <span className="h-2 w-[2px] animate-pulse rounded-full bg-white" />
@@ -609,16 +547,16 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
           </div>
         </div>
 
-        {/* ============================================================ */}
-        {/*                       COMMENTS OVERLAY                        */}
-        {/* ============================================================ */}
+        {}
+        {}
+        {}
 
         <div
           className={`fixed inset-0 z-[100] ${
             showComments ? "pointer-events-auto" : "pointer-events-none"
           }`}
         >
-          {/* BACKDROP */}
+          {}
           <div
             onClick={() => setShowComments(false)}
             className={`absolute inset-0 bg-black/70 backdrop-blur-[2px] transition-opacity duration-300 ${
@@ -626,14 +564,14 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
             }`}
           />
 
-          {/* TOP COMMENTS SHEET */}
+          {}
           <div
             onClick={(event) => event.stopPropagation()}
             className={`absolute left-0 right-0 top-0 mx-auto flex h-[82dvh] w-full max-w-[430px] flex-col overflow-hidden rounded-b-[24px] bg-white text-black shadow-2xl transition-transform duration-300 ease-out dark:bg-[#121212] dark:text-white ${
               showComments ? "translate-y-0" : "-translate-y-full"
             }`}
           >
-            {/* HEADER */}
+            {}
             <div className="relative flex shrink-0 items-center justify-center border-b border-gray-200 px-4 pb-4 pt-5 dark:border-white/10">
               <div className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 rounded-full bg-gray-300 dark:bg-white/20" />
 
@@ -652,7 +590,7 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
               </button>
             </div>
 
-            {/* COMMENT LIST */}
+            {}
             <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-5">
               {comments.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
@@ -723,7 +661,7 @@ export default function SingleReelView({ reel, currentDbUserId }: SingleReelView
               )}
             </div>
 
-            {/* COMMENT INPUT */}
+            {}
             {user ? (
               <div className="shrink-0 border-t border-gray-200 bg-white p-3 pb-[max(12px,env(safe-area-inset-bottom))] dark:border-white/10 dark:bg-[#121212]">
                 <div className="flex items-center gap-2">

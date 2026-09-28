@@ -25,7 +25,6 @@ function CreatePost() {
 
     setIsPosting(true);
     try {
-      // Pass either image or video (not both)
       const mediaUrl = imageUrl || videoUrl;
       const mediaType = imageUrl ? "image" : videoUrl ? "video" : undefined;
       
@@ -63,7 +62,6 @@ function CreatePost() {
             />
           </div>
 
-          {/* Image Upload */}
           {(showImageUpload || imageUrl) && (
             <div className="border rounded-lg p-4">
               <ImageUpload
@@ -77,7 +75,6 @@ function CreatePost() {
             </div>
           )}
 
-          {/* Video Upload */}
           {(showVideoUpload || videoUrl) && (
             <div className="border rounded-lg p-4">
               <ImageUpload

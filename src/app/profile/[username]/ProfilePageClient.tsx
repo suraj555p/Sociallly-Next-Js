@@ -57,10 +57,6 @@ interface ProfilePageClientProps {
   isFollowing: boolean;
 }
 
-/* =========================================================
-   REEL THUMBNAIL
-========================================================= */
-
 function ReelThumbnail({
   reel,
 }: {
@@ -104,7 +100,6 @@ function ReelThumbnail({
       onMouseLeave={handleMouseLeave}
       className="relative aspect-[9/16] bg-muted rounded-sm overflow-hidden group cursor-pointer"
     >
-      {/* VIDEO */}
       <video
         ref={videoRef}
         src={reel.videoUrl ?? undefined}
@@ -115,14 +110,12 @@ function ReelThumbnail({
         preload="metadata"
       />
 
-      {/* DARK OVERLAY */}
       <div
         className={`absolute inset-0 transition-colors ${
           isHovering ? "bg-black/20" : "bg-black/10"
         }`}
       />
 
-      {/* PLAY ICON */}
       <div
         className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-200 ${
           isHovering ? "opacity-0" : "opacity-100"
@@ -133,7 +126,6 @@ function ReelThumbnail({
         </div>
       </div>
 
-      {/* LIKES */}
       <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs font-medium drop-shadow">
         <HeartIcon className="size-3 fill-white" />
         {reel._count.likes}
@@ -141,10 +133,6 @@ function ReelThumbnail({
     </div>
   );
 }
-
-/* =========================================================
-   PROFILE PAGE
-========================================================= */
 
 function ProfilePageClient({
   isFollowing: initialIsFollowing,
@@ -171,10 +159,6 @@ function ProfilePageClient({
     website: user.website || "",
   });
 
-  /* =========================================================
-     UPDATE PROFILE
-  ========================================================= */
-
   const handleEditSubmit = async () => {
     try {
       const formData = new FormData();
@@ -198,9 +182,6 @@ function ProfilePageClient({
     }
   };
 
-  /* =========================================================
-     FOLLOW
-  ========================================================= */
 
   const handleFollow = async () => {
     if (!currentUser) return;
@@ -220,18 +201,10 @@ function ProfilePageClient({
     }
   };
 
-  /* =========================================================
-     OWN PROFILE
-  ========================================================= */
-
   const isOwnProfile =
     currentUser?.username === user.username ||
     currentUser?.emailAddresses[0]?.emailAddress.split("@")[0] ===
       user.username;
-
-  /* =========================================================
-     DATE
-  ========================================================= */
 
   const formattedDate = format(
     new Date(user.createdAt),
@@ -242,47 +215,29 @@ function ProfilePageClient({
     <div className="max-w-3xl mx-auto">
       <div className="grid grid-cols-1 gap-6">
 
-        {/* =====================================================
-            PROFILE CARD
-        ===================================================== */}
-
         <div className="w-full max-w-lg mx-auto">
           <Card className="bg-card">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
-
-                {/* AVATAR */}
                 <Avatar className="w-24 h-24">
                   <AvatarImage
                     src={user.image ?? "/avatar.png"}
                   />
                 </Avatar>
-
-                {/* NAME */}
                 <h1 className="mt-4 text-2xl font-bold">
                   {user.name ?? user.username}
                 </h1>
-
-                {/* USERNAME */}
                 <p className="text-muted-foreground">
                   @{user.username}
                 </p>
-
-                {/* BIO */}
                 {user.bio && (
                   <p className="mt-2 text-sm">
                     {user.bio}
                   </p>
                 )}
 
-                {/* =================================================
-                    PROFILE STATS
-                ================================================= */}
-
                 <div className="w-full mt-6">
                   <div className="flex justify-between mb-4">
-
-                    {/* FOLLOWING */}
                     <div>
                       <div className="font-semibold">
                         {user._count.following.toLocaleString()}
@@ -294,8 +249,6 @@ function ProfilePageClient({
                     </div>
 
                     <Separator orientation="vertical" />
-
-                    {/* FOLLOWERS */}
                     <div>
                       <div className="font-semibold">
                         {user._count.followers.toLocaleString()}
@@ -308,7 +261,6 @@ function ProfilePageClient({
 
                     <Separator orientation="vertical" />
 
-                    {/* POSTS */}
                     <div>
                       <div className="font-semibold">
                         {user._count.posts.toLocaleString()}
@@ -321,7 +273,6 @@ function ProfilePageClient({
 
                     <Separator orientation="vertical" />
 
-                    {/* REELS */}
                     <div>
                       <div className="font-semibold">
                         {user._count.reels.toLocaleString()}
@@ -333,10 +284,6 @@ function ProfilePageClient({
                     </div>
                   </div>
                 </div>
-
-                {/* =================================================
-                    FOLLOW / EDIT BUTTON
-                ================================================= */}
 
                 {!currentUser ? (
                   <SignInButton mode="modal">
@@ -371,13 +318,8 @@ function ProfilePageClient({
                   </Button>
                 )}
 
-                {/* =================================================
-                    LOCATION / WEBSITE / JOINED
-                ================================================= */}
-
                 <div className="w-full mt-6 space-y-2 text-sm">
 
-                  {/* LOCATION */}
                   {user.location && (
                     <div className="flex items-center text-muted-foreground">
                       <MapPinIcon className="size-4 mr-2" />
@@ -385,7 +327,6 @@ function ProfilePageClient({
                     </div>
                   )}
 
-                  {/* WEBSITE */}
                   {user.website && (
                     <div className="flex items-center text-muted-foreground">
                       <LinkIcon className="size-4 mr-2" />
@@ -405,7 +346,6 @@ function ProfilePageClient({
                     </div>
                   )}
 
-                  {/* JOINED */}
                   <div className="flex items-center text-muted-foreground">
                     <CalendarIcon className="size-4 mr-2" />
                     Joined {formattedDate}
@@ -416,20 +356,13 @@ function ProfilePageClient({
           </Card>
         </div>
 
-        {/* =====================================================
-            TABS
-        ===================================================== */}
-
         <Tabs
           defaultValue="posts"
           className="w-full"
         >
 
-          {/* TAB LIST */}
-
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
 
-            {/* POSTS TAB */}
             <TabsTrigger
               value="posts"
               className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
@@ -438,7 +371,6 @@ function ProfilePageClient({
               Posts
             </TabsTrigger>
 
-            {/* REELS TAB */}
             <TabsTrigger
               value="reels"
               className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
@@ -447,7 +379,6 @@ function ProfilePageClient({
               Reels
             </TabsTrigger>
 
-            {/* LIKES TAB */}
             <TabsTrigger
               value="likes"
               className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
@@ -456,10 +387,6 @@ function ProfilePageClient({
               Likes
             </TabsTrigger>
           </TabsList>
-
-          {/* ===================================================
-              POSTS
-          =================================================== */}
 
           <TabsContent
             value="posts"
@@ -484,10 +411,6 @@ function ProfilePageClient({
             </div>
           </TabsContent>
 
-          {/* ===================================================
-              REELS
-          =================================================== */}
-
           <TabsContent
             value="reels"
             className="mt-6"
@@ -510,17 +433,11 @@ function ProfilePageClient({
             )}
           </TabsContent>
 
-          {/* ===================================================
-              LIKES
-          =================================================== */}
-
           <TabsContent
             value="likes"
             className="mt-6"
           >
             <div className="space-y-6">
-
-              {/* LIKED POSTS */}
 
               {likedPosts.length > 0 ? (
                 likedPosts.map((post) => (
@@ -535,8 +452,6 @@ function ProfilePageClient({
                   No liked posts to show
                 </div>
               )}
-
-              {/* LIKED REELS */}
 
               {likedReels.length > 0 && (
                 <div className="grid grid-cols-3 gap-1 sm:gap-2">
@@ -554,10 +469,6 @@ function ProfilePageClient({
             </div>
           </TabsContent>
         </Tabs>
-
-        {/* =====================================================
-            EDIT PROFILE DIALOG
-        ===================================================== */}
 
         <Dialog
           open={showEditDialog}
@@ -628,8 +539,7 @@ function ProfilePageClient({
                 />
               </div>
 
-              {/* WEBSITE */}
-
+            
               <div className="space-y-2">
                 <Label>Website</Label>
 
@@ -647,8 +557,7 @@ function ProfilePageClient({
               </div>
             </div>
 
-            {/* BUTTONS */}
-
+         
             <div className="flex justify-end gap-3">
 
          <DialogClose render={<Button variant="outline" />}>

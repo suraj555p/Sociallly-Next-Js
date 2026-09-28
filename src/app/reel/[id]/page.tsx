@@ -1,6 +1,6 @@
-// app/reel/[id]/page.tsx
+
 import { getReelById } from "@/actions/reel.action";
-import { getDbUserId } from "@/actions/user.action"; // yeh already tumhare paas hai (deleteReel mein use ho raha tha)
+import { getDbUserId } from "@/actions/user.action"; 
 import SingleReelView from "@/components/SingleReelView";
 import { notFound } from "next/navigation";
 
